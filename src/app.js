@@ -37,12 +37,41 @@ app.get('/', (req, res) => {
       todos
   `
   connection.query(sql, (error, result) => {
-    if (error) {
-      throw error;
+    if (err) {
+      console.log(err);
+      res.status(500).json();
+      return;
     }
     res.json(result);
   });
 });
+
+app.get("/api/todos/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = `
+    SELECT
+      id,
+      title,
+      description
+    FROM
+      todos
+    WHERE
+      id = ${id};
+  `;
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json();
+      return;
+    }
+    if (result.length === 0) {
+      res.status(404).json();
+      return;
+    }
+    res.status(200).json(result[0]);
+  });
+})
 
 app.post("/api/todos", (req, res) => {
   const todo = req.body;
@@ -53,8 +82,10 @@ app.post("/api/todos", (req, res) => {
   `
 
   connection.query(sql, (error, result) => {
-    if (error) {
-      throw error;
+    if (err) {
+      console.log(err);
+      res.status(500).json();
+      return;
     }
     res.status(201).json(result.insertId);
   })
